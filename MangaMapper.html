@@ -3,20 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <title>Манга Импозиция 🌸</title>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
 
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+
+<style>
     body {
         font-family: 'Comic Neue', cursive;
         background: #fff0f5;
-        color: #333;
         padding: 20px;
+        color: #444;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Центральный компактный контейнер */
+    .container {
+        width: 650px;
+        max-width: 90%;
+        padding: 20px;
+        background: #ffffffaa;
+        border-radius: 18px;
+        box-shadow: 0 0 15px rgba(255,105,180,0.2);
     }
 
     h1 {
         text-align: center;
         color: #ff69b4;
-        text-shadow: 1px 1px 3px #fff;
+        text-shadow: 1px 1px 2px #fff;
     }
 
     label {
@@ -26,11 +39,12 @@
 
     input, button {
         margin: 5px;
-        padding: 8px;
-        border-radius: 8px;
+        padding: 10px;
+        border-radius: 10px;
         border: 2px solid #ffb6c1;
-        outline: none;
         font-size: 16px;
+        outline: none;
+        background: #fff0f8;
     }
 
     button {
@@ -46,95 +60,151 @@
 
     #result {
         margin-top: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        justify-content: center;
+    }
+
+    .signature {
+        background: #ffe4ec;
+        border: 2px dashed #ff69b4;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
+    }
+
+    .signature h3 {
+        color: #ff1493;
+        margin-top: 0;
     }
 
     .sheet {
-        background: #ffe4e1;
-        border: 2px dashed #ff69b4;
-        border-radius: 15px;
-        padding: 15px;
-        width: 250px;
-        box-shadow: 2px 2px 10px rgba(255,105,180,0.3);
-        position: relative;
+        background: #fff0f5;
+        border: 2px solid #f8a1c4;
+        border-radius: 12px;
+        padding: 12px;
+        margin: 10px 0;
     }
 
-    .sheet::before {
-        content: "📖";
-        position: absolute;
-        top: -10px;
-        left: -10px;
-        font-size: 24px;
+    .sheet-title {
+        font-size: 18px;
+        color: #ff69b4;
+        margin-bottom: 5px;
     }
 
     .side {
-        background: #fff0f5;
-        margin: 5px 0;
+        background: #ffeaf2;
         padding: 8px;
         border-radius: 10px;
-        text-align: center;
-        border: 1px solid #ffb6c1;
+        border: 1px solid #ffc0cb;
+        margin: 5px 0;
     }
 
-    .side span {
+    .page {
         display: inline-block;
-        margin: 3px 6px;
-        padding: 5px 10px;
-        border-radius: 8px;
-        background: #ffc0cb;
+        background: #ffb6c1;
         color: white;
         font-weight: bold;
+        padding: 5px 10px;
+        margin: 3px;
+        border-radius: 8px;
+        min-width: 28px;
+        text-align: center;
     }
 </style>
 </head>
 <body>
-<h1>Манга Импозиция 🌸</h1>
 
-<label>Количество страниц: <input type="number" id="pages" value="16"></label><br>
-<label>Листов в сборке: <input type="number" id="sheets" value="4"></label><br>
-<button onclick="generate()">Сформировать индексы ✨</button>
+<div class="container">
+
+<h1>Импозиция страниц для манги 🌸</h1>
+
+<label>Количество страниц:
+    <input type="number" id="pages" value="32">
+</label><br>
+
+<label>Листов в одной сборке:
+    <input type="number" id="sheets" value="4">
+</label><br>
+
+<button onclick="generate()">Сформировать ✨</button>
 
 <h2>Результат:</h2>
 <div id="result"></div>
 
-<script>
-function generate() {
-    let n_pages = parseInt(document.getElementById("pages").value);
-    let sheets_per_signature = parseInt(document.getElementById("sheets").value);
+</div>
 
-    let total_slots = sheets_per_signature * 4;
-    let pages = [];
-    for(let i=0; i<n_pages; i++) pages.push(i+1); // нумерация с 1
-    while(pages.length < total_slots) pages.push('-'); // пустые страницы
+<script>
+// Алгоритм импозиции одной сборки
+function imposeOneSignature(pages, sheetsPerSignature) {
+    let totalSlots = sheetsPerSignature * 4;
+    while (pages.length < totalSlots) pages.push(-1);
 
     let result = [];
-    for(let i=0; i<sheets_per_signature; i++){
-        let left = i*2;
-        let right = total_slots - 1 - left;
+
+    for (let i = 0; i < sheetsPerSignature; i++) {
+        let left = i * 2;
+        let right = totalSlots - 1 - left;
+
         result.push([
-            [pages[left], pages[right]],        // внешняя сторона
-            [pages[right-1], pages[left+1]]    // внутренняя сторона
+            [pages[left], pages[right]],        
+            [pages[right - 1], pages[left + 1]]  
         ]);
     }
+    return result;
+}
 
-    const container = document.getElementById("result");
-    container.innerHTML = "";
-    result.forEach((sheet, idx) => {
-        const div = document.createElement("div");
-        div.className = "sheet";
-        div.innerHTML = `<h3>Лист ${idx+1} 📄</h3>`;
-        sheet.forEach((side, sidx) => {
-            const sideDiv = document.createElement("div");
-            sideDiv.className = "side";
-            sideDiv.innerHTML = `Сторона ${sidx+1}: <span>${side[0]}</span> | <span>${side[1]}</span>`;
-            div.appendChild(sideDiv);
+function generate() {
+    let totalPages = parseInt(document.getElementById("pages").value);
+    let sheets = parseInt(document.getElementById("sheets").value);
+    let pagesPerSignature = sheets * 4;
+
+    let resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "";
+
+    let signaturesCount = Math.ceil(totalPages / pagesPerSignature);
+
+    for (let s = 0; s < signaturesCount; s++) {
+        let start = s * pagesPerSignature;
+        let end = start + pagesPerSignature;
+
+        let signaturePages = [];
+        for (let i = start; i < end; i++) {
+            signaturePages.push(i < totalPages ? i + 1 : -1);
+        }
+
+        let imposed = imposeOneSignature(signaturePages, sheets);
+
+        let block = document.createElement("div");
+        block.className = "signature";
+        block.innerHTML = `<h3>Сборка ${s + 1} 📚</h3>`;
+
+        imposed.forEach((sheet, i) => {
+            let sheetDiv = document.createElement("div");
+            sheetDiv.className = "sheet";
+
+            sheetDiv.innerHTML = `<div class="sheet-title">Лист ${i + 1}</div>`;
+
+            sheet.forEach((side, sideIndex) => {
+                let sideDiv = document.createElement("div");
+                sideDiv.className = "side";
+                sideDiv.innerHTML = `Сторона ${sideIndex + 1}: `;
+
+                side.forEach(p => {
+                    let span = document.createElement("span");
+                    span.className = "page";
+                    span.textContent = p === -1 ? "—" : p;
+                    sideDiv.appendChild(span);
+                });
+
+                sheetDiv.appendChild(sideDiv);
+            });
+
+            block.appendChild(sheetDiv);
         });
-        container.appendChild(div);
-    });
+
+        resultDiv.appendChild(block);
+    }
 }
 </script>
+
 </body>
 </html>
